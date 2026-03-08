@@ -1044,6 +1044,23 @@ class PallasTestsMixin:
         self.assertEqual(result, expected)
 
     @skip_if_cuda
+    def test_argmax_argmin_keepdim_3d(self):
+        """Test arg-reductions with keepdim=True on 3D tensor."""
+
+        for reduction_op in (torch.argmax, torch.argmin):
+            for dim in [0, 1, 2]:
+
+                def fn(x, op=reduction_op, d=dim):
+                    return op(x, dim=d, keepdim=True)
+
+                compiled = self._compile(fn)
+
+                x = torch.randint(0, 10, (4, 8, 16), device=self.DEVICE)
+                result = compiled(x)
+                expected = fn(x)
+                self.assertEqual(result, expected)
+
+    @skip_if_cuda
     def test_softmax_two_pass(self):
         """Test two-pass softmax (max reduction + sum reduction)."""
 
